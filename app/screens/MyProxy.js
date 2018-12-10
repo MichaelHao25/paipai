@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import StorageUtil from '../utils/StorageUtil';
 import CommonTitleBar from '../views/CommonTitleBar';
-import { Dimensions, Image, StyleSheet, Text, TouchableHighlight, View, ScrollView, TouchableOpacity, FlatList, PixelRatio, Clipboard, CameraRoll, Platform, PermissionsAndroid, ActivityIndicator } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableHighlight, View, ScrollView, TouchableOpacity, FlatList, PixelRatio, Clipboard, CameraRoll, Platform, PermissionsAndroid, ActivityIndicator, Modal, WebView } from 'react-native';
 import Toast from '@remobile/react-native-toast';
 import RNFS from 'react-native-fs';
 import Base64 from '../utils/Base64'
 import {
-	SW,
-	SH,
-	FZ,
+    SW,
+    SH,
+    FZ,
 } from '../utils/ScreenUtil'
 
 const { width } = Dimensions.get('window')
@@ -31,7 +31,9 @@ export default class GameList extends Component {
             isload: false,
             url: '',
             url2: '',
-            clipboard: []
+            clipboard: [],
+            shareVisible: false,
+            currentUri: '',
         }
     }
     componentDidMount() {
@@ -48,8 +50,10 @@ export default class GameList extends Component {
             userInfo,
             uri,
             id,
-            url: `https://010404040404.oss-cn-beijing.aliyuncs.com/ppsj/pp02.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk=,size_35,color_f6f3c3,text_${text},x_140,y_138`,
-            url2: `http://010404040404.oss-cn-beijing.aliyuncs.com/ppsj/pp01.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk=,size_70,color_000000,text_${text2},x_280,y_140`
+            // url: `https://010404040404.oss-cn-beijing.aliyuncs.com/ppsj/pp02.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk=,size_35,color_f6f3c3,text_${text},x_140,y_138`,
+            // url2: `http://010404040404.oss-cn-beijing.aliyuncs.com/ppsj/pp01.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk=,size_70,color_000000,text_${text2},x_280,y_140`
+            url: `http://app.daicui.net:10000/qrcode/r/${id}`,
+            url2: `http://app.daicui.net:10000/qrcode/f/${id}`
         })
 
         this.fetchData('getMessage', id)
@@ -61,8 +65,8 @@ export default class GameList extends Component {
             .then(json => json.json())
             .then(data => {
                 // clipboard
-                
-                var resuit = data.msg[0],arry =[];
+
+                var resuit = data.msg[0], arry = [];
                 for (const key in resuit) {
                     if (resuit.hasOwnProperty(key)) {
                         if ('Id' == key) {
@@ -71,15 +75,15 @@ export default class GameList extends Component {
                         } else {
                             let element = resuit[key];
                             // 这里判断内容是否包含id字符串有则替换
-                            element = element.replace('${id}',id)
+                            element = element.replace('${id}', id)
                             arry.push(element)
                         }
                     }
                 }
                 this.setState({
-                    clipboard:arry
+                    clipboard: arry
                 })
-                
+
             })
             .catch(() => {
                 Toast.showShortCenter('剪切板信息获取失败！')
@@ -88,7 +92,7 @@ export default class GameList extends Component {
 
     }
     render() {
-        const { selectedTab, userInfo, uri, id, getProxy, getDetails, url } = this.state;
+        const { selectedTab, userInfo, uri, id, getProxy, getDetails, url, shareVisible, currentUri } = this.state;
 
         var total = 0;
         if (getDetails.length != 0) {
@@ -112,7 +116,7 @@ export default class GameList extends Component {
                                     </Text>
                                 </View>
                                 <View style={styles.children}>
-                                    <Text style={styles.fz18}>分润：70% 18级分销</Text>
+                                    <Text style={styles.fz18}>分润：90% 18级分销</Text>
                                 </View>
                             </View>
                         </View>
@@ -169,6 +173,30 @@ export default class GameList extends Component {
                             selectedTab == 'tj' ? this.selectedTabTarget_tj() : selectedTab == 'xx' ? this.selectedTabTarget_xx() : selectedTab == 'xj' ? this.selectedTabTarget_xj() : this.selectedTabTarget_fh()
                         }
                     </View>
+                    <Modal
+                        visible={shareVisible}
+                        animationType={'fade'}
+                        onRequestClose={() => {
+                            this.setState({
+                                shareVisible: false,
+                            })
+                        }}
+                    >
+                        <TouchableOpacity onPress={() => {
+                            this.setState({
+                                shareVisible: false,
+                            })
+                        }}
+                            style={{ flex: 1,height:100}}
+                        >
+                            <WebView
+                                source={{ uri: currentUri }}
+                                style={{ flex: 1}}
+                                startInLoadingState={true}
+                            >
+                            </WebView>
+                        </TouchableOpacity>
+                    </Modal>
                 </ScrollView>
             </View >
         )
@@ -234,7 +262,7 @@ export default class GameList extends Component {
         }).then(response => response.json())
             .then(json => {
                 console.log(json);
-                
+
                 if (json.status) {
                     if (json.msg.length != 0) {
                         this.setState({
@@ -400,44 +428,32 @@ export default class GameList extends Component {
         )
     }
     selectedTabTarget_tj = () => {
-        const { url, url2, id ,clipboard} = this.state;
+        const { url, url2, id, clipboard } = this.state;
 
         return (
             <View>
-                <View style={styles.selectedTabTarget_tj_pic}>
-                    <View style={styles.selectedTabTarget_tj_pic_item}>
-                        <Image source={{ uri: url }} style={styles.selectedTabTarget_tj_pic_item_image} />
-                        <TouchableOpacity onPress={() => {
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity style={{ flex: 1, padding: 10 }} onPress={() => {
+                        this.setState({
+                            shareVisible: true,
+                            currentUri: url
+                        })
+                    }}>
 
-                            //需要针对平台进行处理,ios还需要调整...现在只针对android平台弹出权限许可.
-                            if (Platform.OS === 'ios') {
-                                _Download(url)
-                            } else {
-                                this.requestExternalStoragePermission(url)
-                            }
+                        <WebView source={{ uri: url }} style={[{ flex: 1, height: 220 }]}></WebView>
 
-                        }}>
-                            <View style={styles.selectedTabTarget_tj_pic_btn}>
-                                <Text style={styles.selectedTabTarget_tj_pic_btn_text}>保存图片</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.selectedTabTarget_tj_pic_item}>
-                        <Image source={{ uri: url2 }} style={styles.selectedTabTarget_tj_pic_item_image} />
-                        <TouchableOpacity onPress={() => {
-                            //需要针对平台进行处理,ios还需要调整...现在只针对android平台弹出权限许可.
-                            if (Platform.OS === 'ios') {
-                                _Download(url2)
-                            } else {
-                                this.requestExternalStoragePermission(url2)
-                            }
-                        }}>
-                            <View style={styles.selectedTabTarget_tj_pic_btn}>
-                                <Text style={styles.selectedTabTarget_tj_pic_btn_text}>保存图片</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flex: 1, padding: 10 }} onPress={() => {
+                        this.setState({
+                            shareVisible: true,
+                            currentUri: url2
+                        })
+                    }}>
+                        <WebView source={{ uri: url2 }} style={[{ flex: 1, height: 220 }]}></WebView>
+
+                    </TouchableOpacity>
                 </View>
+
                 <View style={styles.selectedTabTarget_tj_text_container}>
                     <View style={styles.selectedTabTarget_tj_text_m}>
                         {/* <Text style={styles.selectedTabTarget_tj_text_c}>2018最火爆、最好玩、最刺激的【派派社交 红包神器】，几千人在线玩，每天随便撸几百块！</Text>
@@ -453,13 +469,13 @@ export default class GameList extends Component {
                         <Text style={styles.selectedTabTarget_tj_text_c}>推荐码:{id}(一定要填哦)</Text>
                         <Text style={styles.selectedTabTarget_tj_text_c}>火爆推广月赚十万元就这么简单</Text> */}
                         {
-                            clipboard.map((value,index)=><Text style={styles.selectedTabTarget_tj_text_c} key={index}>{value}</Text>)
+                            clipboard.map((value, index) => <Text style={styles.selectedTabTarget_tj_text_c} key={index}>{value}</Text>)
                         }
                     </View>
 
 
                     <TouchableOpacity onPress={() => {
-                        Clipboard.setString(clipboard.toString().replace(/,/g,'\n'));
+                        Clipboard.setString(clipboard.toString().replace(/,/g, '\n'));
                         Toast.showShortCenter('复制成功!')
                     }}>
                         <View style={styles.selectedTabTarget_tj_pic_btn}>
@@ -568,11 +584,11 @@ const styles = StyleSheet.create({
         paddingLeft: 5,
     },
     name: {
-        fontSize: Platform.OS=='ios'?FZ(25):18,
+        fontSize: Platform.OS == 'ios' ? FZ(25) : 18,
         color: '#000'
     },
     smallName: {
-        fontSize: Platform.OS=='ios'?FZ(18):14,
+        fontSize: Platform.OS == 'ios' ? FZ(18) : 14,
     },
     children: {
         paddingTop: 5,
@@ -587,7 +603,7 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     fz20: {
-        fontSize: Platform.OS=='ios'?FZ(20):16
+        fontSize: Platform.OS == 'ios' ? FZ(20) : 16
     },
     proxy: {
         flexDirection: "row",
@@ -630,7 +646,7 @@ const styles = StyleSheet.create({
     },
     tabControlItemText: {
         color: '#000',
-        fontSize: Platform.OS=='ios'?FZ(20):16,
+        fontSize: Platform.OS == 'ios' ? FZ(20) : 16,
     },
     tabControlItemBar: {
         position: 'absolute',
@@ -691,11 +707,11 @@ const styles = StyleSheet.create({
         paddingLeft: 5,
     },
     selectedTabTarget_xj_text: {
-        fontSize: Platform.OS=='ios'?FZ(20): 16,
+        fontSize: Platform.OS == 'ios' ? FZ(20) : 16,
         color: '#000',
     },
     selectedTabTarget_xj_text_small: {
-        fontSize: Platform.OS=='ios'?FZ(18):14,
+        fontSize: Platform.OS == 'ios' ? FZ(18) : 14,
     },
     selectedTabTarget_fh: {
         flex: 1,
@@ -717,7 +733,6 @@ const styles = StyleSheet.create({
     selectedTabTarget_tj_pic_item_image: {
         width: (width - 30) / 2,
         height: 210,
-        resizeMode: 'center',
     },
     selectedTabTarget_tj_pic_btn: {
         alignItems: 'center',
@@ -730,7 +745,7 @@ const styles = StyleSheet.create({
     },
     selectedTabTarget_tj_pic_btn_text: {
         color: '#000',
-        fontSize: Platform.OS=='ios'?FZ(20):20
+        fontSize: Platform.OS == 'ios' ? FZ(20) : 20
     },
     selectedTabTarget_tj_text_container: {
         alignItems: 'center',
@@ -742,10 +757,10 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     selectedTabTarget_tj_text_c: {
-        fontSize: Platform.OS=='ios'?FZ(20):16,
+        fontSize: Platform.OS == 'ios' ? FZ(20) : 16,
         color: '#000',
     },
-    fz18:{
-        fontSize: Platform.OS=='ios'?FZ(18):16,
+    fz18: {
+        fontSize: Platform.OS == 'ios' ? FZ(18) : 16,
     }
 })

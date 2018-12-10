@@ -55,13 +55,13 @@ const {width, height} = Dimensions.get('window');
                   <Text style={styles.button}>登录</Text>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity style={{flex: 1}} activeOpacity={0.6} onPress={() => {
+              {/* <TouchableOpacity style={{flex: 1}} activeOpacity={0.6} onPress={() => {
                 this.props.navigation.navigate('Register')
               }}>
                 <View style={[styles.btnRegister, styles.btnColumn]}>
                   <Text style={[styles.button, {color: '#FFFFFF'}]}>注册</Text>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </Animated.View>
           )
         }
@@ -94,6 +94,8 @@ const {width, height} = Dimensions.get('window');
   }
 
   autoLogin() {
+    console.log(1);
+    
     StorageUtil.get('username', (error, object) => {
       if (!error && object && object.username) {
         let username = object.username;
@@ -102,8 +104,8 @@ const {width, height} = Dimensions.get('window');
           if (!error && object && object.password) {
             password = object.password;
             // 只有在自动登录时才注册环信的监听器
-            this.registerHXListener();
-            this.loginToHX(username, password);
+            // this.registerHXListener();
+            // this.loginToHX(username, password);
 
 
             let url = 'http://app.daicui.net/login';
@@ -119,7 +121,13 @@ const {width, height} = Dimensions.get('window');
                   StorageUtil.set('tokeninfo', json.body);
                   this.props.tokenInit({...json.body})
 
-                  
+                  const resetAction = NavigationActions.reset({
+                    index: 0,
+                    actions: [
+                      NavigationActions.navigate({routeName: 'Home'})
+                    ]
+                  });
+                  this.props.navigation.dispatch(resetAction);
               // StorageUtil.set('uid', json.body.id,function() {
               //   console.log('set uid ok');
               // });

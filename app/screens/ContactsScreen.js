@@ -89,85 +89,86 @@ export default class ContactsScreen extends Component {
     //     // })
     //   })
   }
-  componentDidMount() {
-    var _this = this;
-    const { friends } = _this.state;
-    WebIM.conn.getRoster({
-      success: function (roster) {
-        //获取好友列表，并进行好友列表渲染，roster格式为：
-        /** [
-              {
-                jid:'asemoemo#chatdemoui_test1@easemob.com',
-                name:'test1',
-                subscription: 'both'
-              }
-            ]
-        */
-            
-        if (roster.length == 0) {
-          _this.setState({
-            friends: [],
-          }, () => {
-            //联系人设置完毕开始渲染联系人
-            _this.getContacts();
-          })
-        }
-        for (var i = 0, l = roster.length; i < l; i++) {
-          var ros = roster[i];
-          //ros.subscription值为both/to为要显示的联系人，此处与APP需保持一致，才能保证两个客户端登录后的好友列表一致
-          if (ros.subscription === 'both' || ros.subscription === 'to') {
-            var get_more_info = (name) => {
-              fetch(`http://118.123.22.134:8081/CreateRoom/api.php?action=searchfriend&searchaccount=${name}`, {
-                method: 'GET',
-              })
-                .then(json => json.json())
-                .then(data => {
-                  console.log(data);
-                  if (data.code == 0) {
-                    friends.push({
-                      name: name,
-                      avatar: `http://app.daicui.net/img/user/${data.msg[0].id}.jpg`,
-                      nick: data.msg[0].nickName,
-                      pinyin: name
-                    })
-                    _this.setState({
-                      friends
-                    }, () => {
-                      //联系人设置完毕开始渲染联系人
-                      _this.getContacts();
-                    })
-                  } else {
-                    console.log(111);
-                    
-                    Toast.showShortCenter('好友列表获取失败...')
-                  }
-                })
-                .catch(err => console.log(err))
-            }
-            get_more_info(ros.name);
-            // friends.push({
-            //   name: ros.name
-            // })
-            // _this.setState({
-            //   friends
-            // })
+  // componentDidMount() {
+  //   var _this = this;
+  //   const { friends } = _this.state;
+  //   WebIM.conn.getRoster({
+  //     success: function (roster) {
+  //       //获取好友列表，并进行好友列表渲染，roster格式为：
+  //       /** [
+  //             {
+  //               jid:'asemoemo#chatdemoui_test1@easemob.com',
+  //               name:'test1',
+  //               subscription: 'both'
+  //             }
+  //           ]
+  //       */
 
-          }
-        }
-      },
-    })
-  }
+  //       if (roster.length == 0) {
+  //         _this.setState({
+  //           friends: [],
+  //         }, () => {
+  //           //联系人设置完毕开始渲染联系人
+  //           _this.getContacts();
+  //         })
+  //       }
+  //       for (var i = 0, l = roster.length; i < l; i++) {
+  //         var ros = roster[i];
+  //         //ros.subscription值为both/to为要显示的联系人，此处与APP需保持一致，才能保证两个客户端登录后的好友列表一致
+  //         if (ros.subscription === 'both' || ros.subscription === 'to') {
+  //           var get_more_info = (name) => {
+  //             fetch(`http://118.123.22.134:8081/CreateRoom/api.php?action=searchfriend&searchaccount=${name}`, {
+  //               method: 'GET',
+  //             })
+  //               .then(json => json.json())
+  //               .then(data => {
+  //                 console.log(data);
+  //                 if (data.code == 0) {
+  //                   friends.push({
+  //                     name: name,
+  //                     avatar: `http://app.daicui.net/img/user/${data.msg[0].id}.jpg`,
+  //                     nick: data.msg[0].nickName,
+  //                     pinyin: name
+  //                   })
+  //                   _this.setState({
+  //                     friends
+  //                   }, () => {
+  //                     //联系人设置完毕开始渲染联系人
+  //                     _this.getContacts();
+  //                   })
+  //                 } else {
+  //                   console.log(111);
+
+  //                   Toast.showShortCenter('好友列表获取失败...')
+  //                 }
+  //               })
+  //               .catch(err => console.log(err))
+  //           }
+  //           get_more_info(ros.name);
+  //           // friends.push({
+  //           //   name: ros.name
+  //           // })
+  //           // _this.setState({
+  //           //   friends
+  //           // })
+
+  //         }
+  //       }
+  //     },
+  //   })
+  // }
   render() {
-    switch (this.state.loadingState) {
-      case Global.loading:
-        // this.getContacts();
-        return this.renderLoadingView();
-      case Global.loadSuccess:
-        return this.renderSuccessView();
-      case Global.loadError:
-        return this.renderErrorView();
-      default:
-    }
+    // switch (this.state.loadingState) {
+    //   case Global.loading:
+    //     // this.getContacts();
+    //     return this.renderLoadingView();
+    //   case Global.loadSuccess:
+    // return this.renderSuccessView();
+    // case Global.loadError:
+    //   return this.renderErrorView();
+    // default:
+    // }
+    return this.renderSuccessView();
   }
 
   renderLoadingView() {
@@ -336,35 +337,35 @@ export default class ContactsScreen extends Component {
 
 const listItemStyle = StyleSheet.create({
   container: {
-      width: width,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#FFFFFF'
+    width: width,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF'
   },
   image: {
-      marginLeft: 15,
-      marginRight: 15,
-      marginTop: 8,
-      marginBottom: 8,
-      width: 35,
-      height: 35,
+    marginLeft: 15,
+    marginRight: 15,
+    marginTop: 8,
+    marginBottom: 8,
+    width: 35,
+    height: 35,
   },
   itemText: {
-      fontSize: Platform.OS=='ios'?FZ(22):15,
-      color: '#000000'
+    fontSize: Platform.OS == 'ios' ? FZ(22) : 15,
+    color: '#000000'
   },
   subText: {
-      fontSize: Platform.OS=='ios'?FZ(20):15,
-      color: '#999999'
+    fontSize: Platform.OS == 'ios' ? FZ(20) : 15,
+    color: '#999999'
   },
   sectionView: {
-      width: width,
-      backgroundColor: 'rgba(0, 0, 0, 0)',
-      paddingLeft: 10,
-      paddingRight: 10,
-      paddingTop: 2,
-      paddingBottom: 2,
-      color: '#999999'
+    width: width,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 2,
+    paddingBottom: 2,
+    color: '#999999'
   }
 });
 

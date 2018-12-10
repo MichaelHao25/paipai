@@ -6,7 +6,7 @@ import CountEmitter from '../event/CountEmitter';
 import StorageUtil from '../utils/StorageUtil';
 import LoadingView from '../views/LoadingView';
 import Utils from '../utils/Utils';
-import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView,Platform } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Platform } from 'react-native';
 import {
 	connect
 } from 'react-redux'
@@ -63,8 +63,8 @@ class LoginScreen extends Component {
 										<Text style={{ fontSize: 16 }}>用户名：</Text>
 										<TextInput onChangeText={(text) => {
 											this.setState({ inputUsername: text })
-										}} style={styles.textInput} underlineColorAndroid="transparent" 
-										autoCapitalize={"none"}/>
+										}} style={styles.textInput} underlineColorAndroid="transparent"
+											autoCapitalize={"none"} />
 									</View>
 									<View style={styles.pwdDivider}></View>
 								</View>
@@ -87,8 +87,8 @@ class LoginScreen extends Component {
 								<Text style={{ fontSize: 16 }}>密码：</Text>
 								<TextInput secureTextEntry={true} onChangeText={(text) => {
 									this.setState({ password: text })
-								}} style={styles.textInput} underlineColorAndroid="transparent" 
-								autoCapitalize={"none"}/>
+								}} style={styles.textInput} underlineColorAndroid="transparent"
+									autoCapitalize={"none"} />
 							</View>
 							<View style={styles.pwdDivider}></View>
 							<TouchableOpacity activeOpacity={0.6} onPress={() => this.login()}>
@@ -158,8 +158,7 @@ class LoginScreen extends Component {
 					if (json.code === 200) {
 						// 登录服务器成功，再登录NIM的服务器
 						let data = json.body;
-						console.log('hello');
-						
+
 						console.log(data);
 						this.props.tokenInit({ ...data })
 						StorageUtil.set('tokeninfo', data);
@@ -180,8 +179,20 @@ class LoginScreen extends Component {
 							// });
 
 							Toast.showShortCenter('登录聊天服务器...');
-							this.registerHXListener();
-							this.loginToHX(username, password);
+							Toast.showShortCenter('登录成功');
+							StorageUtil.set('hasLogin', { 'hasLogin': true });
+							StorageUtil.set('username', { 'username': username });
+							StorageUtil.set('password', { 'password': password });
+							console.log(username);
+							console.log(password);
+							
+							const resetAction = NavigationActions.reset({
+								index: 0,
+								actions: [
+									NavigationActions.navigate({ routeName: 'Home' })
+								]
+							});
+							this.props.navigation.dispatch(resetAction);
 						}
 					} else {
 						Toast.showShortCenter(json.msg);
@@ -275,7 +286,7 @@ const styles = StyleSheet.create({
 	},
 	usernameText: {
 		marginTop: 10,
-		fontSize: Platform.OS=='ios'?FZ(20):16 ,
+		fontSize: Platform.OS == 'ios' ? FZ(20) : 16,
 		textAlign: 'center'
 	},
 	pwdContainer: {
@@ -304,7 +315,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	changeAccount: {
-		fontSize: Platform.OS=='ios'?FZ(20):16 ,
+		fontSize: Platform.OS == 'ios' ? FZ(20) : 16,
 		color: '#00BC0C',
 		textAlign: 'center',
 		marginBottom: 20,

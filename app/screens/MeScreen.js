@@ -68,6 +68,8 @@ export default class MeScreen extends Component {
         this.setState({ username: username });
         let userInfoKey = 'userInfo-' + username;
 
+        console.log(1);
+        
         StorageUtil.get(userInfoKey, (error, object) => {
           if (!error && object != null) {
 
